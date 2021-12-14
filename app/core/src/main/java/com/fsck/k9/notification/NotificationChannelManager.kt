@@ -1,5 +1,6 @@
 package com.fsck.k9.notification
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationChannelGroup
 import android.app.NotificationManager
@@ -144,6 +145,23 @@ class NotificationChannelManager(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getNotificationLightConfiguration(account: Account): NotificationLightConfiguration {
+        val channelId = getChannelIdFor(account, ChannelType.MESSAGES)
+        val notificationChannel = notificationManager.getNotificationChannel(channelId)
+
+        val shouldShowLights = notificationChannel.shouldShowLights()
+        return NotificationLightConfiguration(
+            isEnabled = shouldShowLights,
+            color = if (shouldShowLights) notificationChannel.lightColor else Notification.COLOR_DEFAULT
+        )
+    }
+
     private val Account.messagesNotificationChannelSuffix: String
         get() = messagesNotificationChannelVersion.let { version -> if (version == 0) "" else "_$version" }
 }
+
+data class NotificationLightConfiguration(
+    val isEnabled: Boolean,
+    val color: Int
+)
